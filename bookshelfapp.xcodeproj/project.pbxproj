@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		03AC7FF32D6A153100256F8C /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 03AC7FF22D6A153100256F8C /* FirebaseAuth */; };
+		03AC7FF52D6A153100256F8C /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 03AC7FF42D6A153100256F8C /* FirebaseFirestore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		03B4039F2D69EAD400F0AD08 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +57,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				03AC7FF32D6A153100256F8C /* FirebaseAuth in Frameworks */,
+				03AC7FF52D6A153100256F8C /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +119,8 @@
 			);
 			name = bookshelfapp;
 			packageProductDependencies = (
+				03AC7FF22D6A153100256F8C /* FirebaseAuth */,
+				03AC7FF42D6A153100256F8C /* FirebaseFirestore */,
 			);
 			productName = bookshelfapp;
 			productReference = 03B4038E2D69EAD200F0AD08 /* bookshelfapp.app */;
@@ -195,6 +204,9 @@
 			);
 			mainGroup = 03B403852D69EAD200F0AD08;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				03AC7FF12D6A153100256F8C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 03B4038F2D69EAD200F0AD08 /* Products */;
 			projectDirPath = "";
@@ -558,6 +570,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		03AC7FF12D6A153100256F8C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.8.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		03AC7FF22D6A153100256F8C /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 03AC7FF12D6A153100256F8C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		03AC7FF42D6A153100256F8C /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 03AC7FF12D6A153100256F8C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 03B403862D69EAD200F0AD08 /* Project object */;
 }

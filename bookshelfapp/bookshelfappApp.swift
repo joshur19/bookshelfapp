@@ -6,12 +6,28 @@
 //
 
 import SwiftUI
+import Firebase
 
 @main
 struct bookshelfappApp: App {
+    @StateObject private var authViewModel = AuthViewModel()
+    @StateObject private var repository = Repository()
+    
+    init() {
+        FirebaseApp.configure()
+    }
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if authViewModel.isLoggedIn && !authViewModel.isRegistering {
+                BookshelfView()
+                    .environmentObject(authViewModel)
+                    .environmentObject(repository)
+            } else {
+                LoginView()
+                    .environmentObject(authViewModel)
+                    .environmentObject(repository)
+            }
         }
     }
 }
