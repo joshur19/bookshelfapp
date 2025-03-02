@@ -50,9 +50,22 @@ struct BookDetailView: View {
             Form {
                 Section {
                     HStack {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(colorFromString(book.coverColor ?? "gray"))
-                            .frame(width: 80, height: 120)
+                        if let thumbnailUrl = book.thumbnailUrl, let url = URL(string: thumbnailUrl) {
+                            AsyncImage(url: url) { image in
+                                image.resizable()
+                                     .scaledToFit()
+                                     .frame(width: 80, height: 120)
+                                     .cornerRadius(8)
+                            } placeholder: {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(colorFromString(book.coverColor ?? "gray"))
+                                    .frame(width: 80, height: 120)
+                            }
+                        } else {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(colorFromString(book.coverColor ?? "gray"))
+                                .frame(width: 80, height: 120)
+                        }
                         
                         VStack(alignment: .leading, spacing: 8) {
                             Text(book.title)
@@ -61,6 +74,18 @@ struct BookDetailView: View {
                             Text(book.author)
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
+                            
+                            if let publishedYear = book.publishedYear {
+                                Text("Published: \(publishedYear)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            if let isbn = book.isbn {
+                                Text("ISBN: \(isbn)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
                             
                             if book.isLent {
                                 HStack {

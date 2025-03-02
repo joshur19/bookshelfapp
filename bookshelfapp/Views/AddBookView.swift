@@ -178,6 +178,12 @@ struct AddBookView: View {
         isLoading = true
         errorMessage = nil
         
+        // Modify the thumbnailUrl to use HTTPS if it's HTTP
+        var secureThumbnailUrl = thumbnailUrl
+        if let url = thumbnailUrl, url.lowercased().hasPrefix("http://") {
+            secureThumbnailUrl = url.replacingOccurrences(of: "http://", with: "https://")
+        }
+        
         let newBook = Book(
             title: title,
             author: author,
@@ -185,10 +191,8 @@ struct AddBookView: View {
             coverColor: selectedColor,
             isbn: isbn.isEmpty ? nil : isbn,
             publishedYear: publishedYear.isEmpty ? nil : publishedYear,
-            thumbnailUrl: thumbnailUrl
+            thumbnailUrl: secureThumbnailUrl
         )
-        
-        print(newBook.thumbnailUrl ?? "")
         
         repository.addBook(userId: userId, book: newBook) { error in
             isLoading = false
