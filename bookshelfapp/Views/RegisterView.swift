@@ -42,19 +42,22 @@ struct RegisterView: View {
             VStack(spacing: 16) {
                 TextField("Email", text: $email)
                     .padding()
-                    .background(Color.white)
+                    .background(Color(.systemBackground))
+                    .foregroundColor(.primary) // Ensures text adapts to light/dark mode
                     .cornerRadius(8)
                     .keyboardType(.emailAddress)
                     .autocapitalization(.none)
 
                 SecureField("Password", text: $password)
                     .padding()
-                    .background(Color.white)
+                    .background(Color(.systemBackground))
+                    .foregroundColor(.primary) // Ensures text is visible
                     .cornerRadius(8)
 
                 SecureField("Confirm Password", text: $confirmPassword)
                     .padding()
-                    .background(Color.white)
+                    .background(Color(.systemBackground))
+                    .foregroundColor(.primary) // Ensures text is visible
                     .cornerRadius(8)
             }
             .padding(.horizontal)
