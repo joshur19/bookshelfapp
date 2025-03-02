@@ -136,12 +136,15 @@ struct BookshelfView: View {
             }
             .onAppear {
                 if let userId = authViewModel.user?.uid {
-                    repository.fetchBooks(for: userId)
+                    withAnimation(nil) {
+                        repository.fetchBooks(for: userId)
+                    }
                 }
             }
             .onDisappear {
                 repository.cleanUp()
             }
+            .animation(nil, value: repository.isLoading)
         }
     }
 }
