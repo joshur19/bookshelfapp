@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		03AC7FF32D6A153100256F8C /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 03AC7FF22D6A153100256F8C /* FirebaseAuth */; };
 		03AC7FF52D6A153100256F8C /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 03AC7FF42D6A153100256F8C /* FirebaseFirestore */; };
+		03F2E0D12D748BC2008A1206 /* CodeScanner in Frameworks */ = {isa = PBXBuildFile; productRef = 03F2E0D02D748BC2008A1206 /* CodeScanner */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +60,7 @@
 			files = (
 				03AC7FF32D6A153100256F8C /* FirebaseAuth in Frameworks */,
 				03AC7FF52D6A153100256F8C /* FirebaseFirestore in Frameworks */,
+				03F2E0D12D748BC2008A1206 /* CodeScanner in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,6 +123,7 @@
 			packageProductDependencies = (
 				03AC7FF22D6A153100256F8C /* FirebaseAuth */,
 				03AC7FF42D6A153100256F8C /* FirebaseFirestore */,
+				03F2E0D02D748BC2008A1206 /* CodeScanner */,
 			);
 			productName = bookshelfapp;
 			productReference = 03B4038E2D69EAD200F0AD08 /* bookshelfapp.app */;
@@ -206,6 +209,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				03AC7FF12D6A153100256F8C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				03F2E0CF2D748BC2008A1206 /* XCRemoteSwiftPackageReference "CodeScanner" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 03B4038F2D69EAD200F0AD08 /* Products */;
@@ -411,6 +415,7 @@
 				DEVELOPMENT_TEAM = 5NK96W3H6P;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "We need camera access to scan book barcodes";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -440,6 +445,7 @@
 				DEVELOPMENT_TEAM = 5NK96W3H6P;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "We need camera access to scan book barcodes";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -580,6 +586,14 @@
 				minimumVersion = 11.8.1;
 			};
 		};
+		03F2E0CF2D748BC2008A1206 /* XCRemoteSwiftPackageReference "CodeScanner" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/twostraws/CodeScanner.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -592,6 +606,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 03AC7FF12D6A153100256F8C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		03F2E0D02D748BC2008A1206 /* CodeScanner */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 03F2E0CF2D748BC2008A1206 /* XCRemoteSwiftPackageReference "CodeScanner" */;
+			productName = CodeScanner;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

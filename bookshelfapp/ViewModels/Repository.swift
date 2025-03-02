@@ -19,6 +19,10 @@ struct Book: Identifiable, Codable {
     var lentDate: Date?
     var returnDate: Date?
     var coverColor: String?
+    
+    var isbn: String?
+    var publishedYear: String?
+    var thumbnailUrl: String?
 }
 
 class Repository: ObservableObject {

@@ -162,67 +162,136 @@ struct BookView: View {
         }
     }
     
+    // Ensure the thumbnail URL is always HTTPS
+    var secureThumbnailUrl: URL? {
+        guard let thumbnailUrl = book.thumbnailUrl,
+              var urlComponents = URLComponents(string: thumbnailUrl) else {
+            return nil
+        }
+        
+        if urlComponents.scheme == "http" {
+            urlComponents.scheme = "https"
+        }
+        
+        return urlComponents.url
+    }
+    
     func colorFromString(_ colorName: String) -> Color? {
         switch colorName {
-        case "red":
-            return .red
-        case "blue":
-            return .blue
-        case "green":
-            return .green
-        case "orange":
-            return .orange
-        case "purple":
-            return .purple
-        case "yellow":
-            return .yellow
-        default:
-            return nil
+        case "red": return .red
+        case "blue": return .blue
+        case "green": return .green
+        case "orange": return .orange
+        case "purple": return .purple
+        case "yellow": return .yellow
+        default: return nil
         }
     }
     
     var body: some View {
         VStack {
-            RoundedRectangle(cornerRadius: 8)
-                .fill(bookColor)
-                .frame(height: 160)
-                .overlay(
-                    VStack {
-                        Text(book.title)
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 5)
-                        
-                        Text(book.author)
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.8))
-                            .padding(.top, 2)
-                        
-                        if book.isLent {
-                            HStack {
-                                Image(systemName: "person.fill")
-                                    .foregroundColor(.white)
-                                Text(book.lentTo ?? "Someone")
-                                    .font(.caption2)
-                                    .foregroundColor(.white)
-                            }
-                            .padding(4)
-                            .background(Color.black.opacity(0.3))
-                            .cornerRadius(4)
-                            .padding(.top, 4)
-                        } else if book.isCurrentlyReading {
-                            Text("Reading")
-                                .font(.caption2)
+            if let url = secureThumbnailUrl {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(height: 160)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    case .failure:
+                        // Fallback to color rectangle if image fails to load
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(bookColor)
+                            .frame(height: 160)
+                            .overlay(
+                                VStack {
+                                    Text(book.title)
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 5)
+                                    
+                                    Text(book.author)
+                                        .font(.caption)
+                                        .foregroundColor(.white.opacity(0.8))
+                                        .padding(.top, 2)
+                                    
+                                    if book.isLent {
+                                        HStack {
+                                            Image(systemName: "person.fill")
+                                                .foregroundColor(.white)
+                                            Text(book.lentTo ?? "Someone")
+                                                .font(.caption2)
+                                                .foregroundColor(.white)
+                                        }
+                                        .padding(4)
+                                        .background(Color.black.opacity(0.3))
+                                        .cornerRadius(4)
+                                        .padding(.top, 4)
+                                    } else if book.isCurrentlyReading {
+                                        Text("Reading")
+                                            .font(.caption2)
+                                            .foregroundColor(.white)
+                                            .padding(4)
+                                            .background(Color.green.opacity(0.7))
+                                            .cornerRadius(4)
+                                            .padding(.top, 4)
+                                    }
+                                }
+                            )
+                    @unknown default:
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(bookColor)
+                            .frame(height: 160)
+                    }
+                }
+            } else {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(bookColor)
+                    .frame(height: 160)
+                    .overlay(
+                        VStack {
+                            Text(book.title)
+                                .font(.headline)
                                 .foregroundColor(.white)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 5)
+                            
+                            Text(book.author)
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.8))
+                                .padding(.top, 2)
+                            
+                            if book.isLent {
+                                HStack {
+                                    Image(systemName: "person.fill")
+                                        .foregroundColor(.white)
+                                    Text(book.lentTo ?? "Someone")
+                                        .font(.caption2)
+                                        .foregroundColor(.white)
+                                }
                                 .padding(4)
-                                .background(Color.green.opacity(0.7))
+                                .background(Color.black.opacity(0.3))
                                 .cornerRadius(4)
                                 .padding(.top, 4)
+                            } else if book.isCurrentlyReading {
+                                Text("Reading")
+                                    .font(.caption2)
+                                    .foregroundColor(.white)
+                                    .padding(4)
+                                    .background(Color.green.opacity(0.7))
+                                    .cornerRadius(4)
+                                    .padding(.top, 4)
+                            }
                         }
-                    }
-                )
-                .shadow(radius: 2)
+                    )
+                    .shadow(radius: 2)
+            }
+            
+            // Rest of your BookView
         }
     }
 }
