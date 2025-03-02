@@ -26,15 +26,6 @@ struct LoginView: View {
                     .foregroundColor(.primary)
                     .multilineTextAlignment(.center)
 
-                if let message = successMessage {
-                    Text(message)
-                        .foregroundColor(.green)
-                        .padding(.vertical, 8)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.green.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
-                        .padding(.horizontal)
-                }
-                
                 if let error = errorMessage {
                     Text(error)
                         .foregroundColor(.red)
@@ -42,13 +33,20 @@ struct LoginView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.red.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
                         .padding(.horizontal)
+                } else if let message = successMessage {
+                    Text(message)
+                        .foregroundColor(.green)
+                        .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.green.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
+                        .padding(.horizontal)
                 }
 
                 VStack(spacing: 16) {
                     TextField("Email", text: $email)
                         .padding()
                         .background(Color(.systemBackground))
-                        .foregroundColor(.primary) // Ensures text adapts to light/dark mode
+                        .foregroundColor(.primary)
                         .cornerRadius(8)
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
@@ -56,7 +54,7 @@ struct LoginView: View {
                     SecureField("Password", text: $password)
                         .padding()
                         .background(Color(.systemBackground))
-                        .foregroundColor(.primary) // Ensures text is visible
+                        .foregroundColor(.primary)
                         .cornerRadius(8)
                 }
                 .padding(.horizontal)
@@ -90,6 +88,11 @@ struct LoginView: View {
             }
             .padding()
             .background(Color(.systemGray6).edgesIgnoringSafeArea(.all))
+            .onAppear {
+                email = ""
+                password = ""
+                errorMessage = nil
+            }
         }
     }
 }

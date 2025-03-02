@@ -67,6 +67,7 @@ struct RegisterView: View {
                 
                 guard password == confirmPassword else {
                     self.errorMessage = "Passwords do not match"
+                    isLoading = false
                     return
                 }
                                 
@@ -120,6 +121,12 @@ struct RegisterView: View {
         }
         .padding()
         .background(Color(.systemGray6).edgesIgnoringSafeArea(.all))
+        .onAppear {
+            email = ""
+            password = ""
+            errorMessage = nil
+            confirmPassword = ""
+        }
     }
 }
 

@@ -30,7 +30,9 @@ struct BookshelfView: View {
     }
     
     let columns = [
-        GridItem(.adaptive(minimum: 120), spacing: 16)
+        GridItem(.flexible(), spacing: 16),
+        GridItem(.flexible(), spacing: 16),
+        GridItem(.flexible(), spacing: 16)
     ]
     
     var body: some View {
@@ -205,7 +207,7 @@ struct BookView: View {
                         // Fallback to color rectangle if image fails to load
                         RoundedRectangle(cornerRadius: 8)
                             .fill(bookColor)
-                            .frame(height: 160)
+                            .frame(height: 200)
                             .overlay(
                                 VStack {
                                     Text(book.title)
