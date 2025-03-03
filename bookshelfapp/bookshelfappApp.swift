@@ -15,6 +15,12 @@ struct bookshelfappApp: App {
     
     init() {
         FirebaseApp.configure()
+        
+        // Configure URLCache with 50MB disk cache and 10MB memory cache
+        let memoryCapacity = 50 * 1024 * 1024 // 50 MB
+        let diskCapacity = 100 * 1024 * 1024 // 100 MB
+        let cache = URLCache(memoryCapacity: memoryCapacity, diskCapacity: diskCapacity, directory: nil)
+        URLCache.shared = cache
     }
     
     var body: some Scene {

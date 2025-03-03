@@ -51,16 +51,14 @@ struct BookDetailView: View {
                 Section {
                     HStack {
                         if let thumbnailUrl = book.thumbnailUrl, let url = URL(string: thumbnailUrl) {
-                            AsyncImage(url: url) { image in
-                                image.resizable()
-                                     .scaledToFit()
-                                     .frame(width: 80, height: 120)
-                                     .cornerRadius(8)
-                            } placeholder: {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(colorFromString(book.coverColor ?? "gray"))
+                            CachedAsyncImage(url: url) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFit()
                                     .frame(width: 80, height: 120)
+                                    .cornerRadius(8)
                             }
+                            .frame(width: 80, height: 120)
                         } else {
                             RoundedRectangle(cornerRadius: 8)
                                 .fill(colorFromString(book.coverColor ?? "gray"))

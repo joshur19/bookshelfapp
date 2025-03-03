@@ -164,20 +164,6 @@ struct BookView: View {
         }
     }
     
-    // Ensure the thumbnail URL is always HTTPS
-    var secureThumbnailUrl: URL? {
-        guard let thumbnailUrl = book.thumbnailUrl,
-              var urlComponents = URLComponents(string: thumbnailUrl) else {
-            return nil
-        }
-        
-        if urlComponents.scheme == "http" {
-            urlComponents.scheme = "https"
-        }
-        
-        return urlComponents.url
-    }
-    
     func colorFromString(_ colorName: String) -> Color? {
         switch colorName {
         case "red": return .red
@@ -192,64 +178,15 @@ struct BookView: View {
     
     var body: some View {
         VStack {
-            if let url = secureThumbnailUrl {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(height: 160)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                    case .failure:
-                        // Fallback to color rectangle if image fails to load
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(bookColor)
-                            .frame(height: 200)
-                            .overlay(
-                                VStack {
-                                    Text(book.title)
-                                        .font(.headline)
-                                        .foregroundColor(.white)
-                                        .multilineTextAlignment(.center)
-                                        .padding(.horizontal, 5)
-                                    
-                                    Text(book.author)
-                                        .font(.caption)
-                                        .foregroundColor(.white.opacity(0.8))
-                                        .padding(.top, 2)
-                                    
-                                    if book.isLent {
-                                        HStack {
-                                            Image(systemName: "person.fill")
-                                                .foregroundColor(.white)
-                                            Text(book.lentTo ?? "Someone")
-                                                .font(.caption2)
-                                                .foregroundColor(.white)
-                                        }
-                                        .padding(4)
-                                        .background(Color.black.opacity(0.3))
-                                        .cornerRadius(4)
-                                        .padding(.top, 4)
-                                    } else if book.isCurrentlyReading {
-                                        Text("Reading")
-                                            .font(.caption2)
-                                            .foregroundColor(.white)
-                                            .padding(4)
-                                            .background(Color.green.opacity(0.7))
-                                            .cornerRadius(4)
-                                            .padding(.top, 4)
-                                    }
-                                }
-                            )
-                    @unknown default:
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(bookColor)
-                            .frame(height: 160)
-                    }
+            if let thumbnailUrl = book.thumbnailUrl, let url = URL(string: thumbnailUrl) {
+                CachedAsyncImage(url: url) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(height: 160)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
+                .frame(height: 160)
             } else {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(bookColor)
