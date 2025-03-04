@@ -164,6 +164,7 @@ class Repository: ObservableObject {
         let bookRef = db.collection("users").document(userId).collection("books").document(bookId)
         
         bookRef.updateData([
+            "isCurrentlyReading": false,
             "isLent": true,
             "lentTo": lentTo,
             "lentDate": Timestamp(date: Date())

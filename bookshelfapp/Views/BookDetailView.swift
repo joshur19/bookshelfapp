@@ -11,25 +11,32 @@ struct BookDetailView: View {
     var repository: Repository
     var userId: String
     var book: Book
-    
+
     @Environment(\.presentationMode) var presentationMode
     @State private var isCurrentlyReading: Bool
     @State private var isLending = false
     @State private var friendName = ""
     @State private var isLoading = false
     @State private var errorMessage: String?
-    
+
+    @State private var editedTitle: String
+    @State private var editedAuthor: String
+    @State private var editedPublishedYear: String
+
     var bookColor: Color {
         return Color.color(from: book.coverColor)
     }
-    
+
     init(repository: Repository, userId: String, book: Book) {
         self.repository = repository
         self.userId = userId
         self.book = book
         _isCurrentlyReading = State(initialValue: book.isCurrentlyReading)
+        _editedTitle = State(initialValue: book.title)
+        _editedAuthor = State(initialValue: book.author)
+        _editedPublishedYear = State(initialValue: book.publishedYear?.description ?? "")
     }
-    
+
     var body: some View {
         NavigationView {
             Form {
@@ -49,27 +56,26 @@ struct BookDetailView: View {
                                 .fill(bookColor)
                                 .frame(width: 80, height: 120)
                         }
-                        
+
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(book.title)
+                            TextField("Title", text: $editedTitle)
                                 .font(.headline)
-                            
-                            Text(book.author)
+
+                            TextField("Author", text: $editedAuthor)
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
-                            
-                            if let publishedYear = book.publishedYear {
-                                Text("Published: \(publishedYear)")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }
-                            
+
+                            TextField("Published Year", text: $editedPublishedYear)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .keyboardType(.numberPad)
+
                             if let isbn = book.isbn {
                                 Text("ISBN: \(isbn)")
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                             }
-                            
+
                             if book.isLent {
                                 HStack {
                                     Image(systemName: "person.fill")
@@ -77,7 +83,7 @@ struct BookDetailView: View {
                                         .font(.caption)
                                 }
                                 .foregroundColor(.orange)
-                                
+
                                 if let lentDate = book.lentDate {
                                     Text("Since: \(lentDate, formatter: dateFormatter)")
                                         .font(.caption)
@@ -89,14 +95,14 @@ struct BookDetailView: View {
                     }
                     .padding(.vertical, 8)
                 }
-                
+
                 Section {
                     Toggle("Currently Reading", isOn: $isCurrentlyReading)
                         .onChange(of: isCurrentlyReading) { oldValue, newValue in
                             updateReadingStatus()
                         }
                 }
-                
+
                 Section {
                     if book.isLent {
                         Button(action: returnBook) {
@@ -115,7 +121,7 @@ struct BookDetailView: View {
                             .foregroundColor(.blue)
                         }
                     }
-                    
+
                     Button(action: deleteBook) {
                         HStack {
                             Image(systemName: "trash")
@@ -124,7 +130,7 @@ struct BookDetailView: View {
                         .foregroundColor(.red)
                     }
                 }
-                
+
                 if let errorMessage = errorMessage {
                     Section {
                         Text(errorMessage)
@@ -137,6 +143,7 @@ struct BookDetailView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
+                        updateBookDetails()
                         presentationMode.wrappedValue.dismiss()
                     }
                 }
@@ -145,7 +152,7 @@ struct BookDetailView: View {
                 NavigationView {
                     Form {
                         TextField("Friend's Name", text: $friendName)
-                        
+
                         Button(action: lendBook) {
                             Text("Lend Book")
                         }
@@ -173,10 +180,10 @@ struct BookDetailView: View {
             )
         }
     }
-    
+
     private func updateReadingStatus() {
         guard book.id != nil else { return }
-        
+                
         isLoading = true
         errorMessage = nil
         
@@ -192,10 +199,10 @@ struct BookDetailView: View {
             }
         }
     }
-    
+
     private func lendBook() {
         guard let id = book.id, !friendName.isEmpty else { return }
-        
+                
         isLoading = true
         errorMessage = nil
         isLending = false
@@ -210,10 +217,10 @@ struct BookDetailView: View {
             }
         }
     }
-    
+
     private func returnBook() {
         guard let id = book.id else { return }
-        
+                
         isLoading = true
         errorMessage = nil
         
@@ -227,10 +234,10 @@ struct BookDetailView: View {
             }
         }
     }
-    
+
     private func deleteBook() {
         guard let id = book.id else { return }
-        
+                
         isLoading = true
         errorMessage = nil
         
@@ -244,11 +251,32 @@ struct BookDetailView: View {
             }
         }
     }
-    
+
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         return formatter
+    }
+
+    private func updateBookDetails() {
+        guard book.id != nil else { return }
+
+        isLoading = true
+        errorMessage = nil
+
+        var updatedBook = book
+        updatedBook.title = editedTitle
+        updatedBook.author = editedAuthor
+        updatedBook.publishedYear = editedPublishedYear
+        updatedBook.isCurrentlyReading = isCurrentlyReading
+
+        repository.updateBook(userId: userId, book: updatedBook) { error in
+            isLoading = false
+
+            if let error = error {
+                errorMessage = "Error updating book details: \(error.localizedDescription)"
+            }
+        }
     }
 }
