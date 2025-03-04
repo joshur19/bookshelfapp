@@ -11,21 +11,17 @@ struct BookshelfView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var repository: Repository
     
-    @State private var selectedShelf: String = "Currently Reading"
+    @State private var selectedShelf: String = "All Books"
     @State private var showAddBookSheet = false
     @State private var showLendBookSheet = false
     @State private var selectedBook: Book?
     
     var filteredBooks: [Book] {
         switch selectedShelf {
-        case "Currently Reading":
-            return repository.books.filter { $0.isCurrentlyReading }
-        case "All Books":
-            return repository.books
-        case "Lent Books":
-            return repository.books.filter { $0.isLent }
-        default:
-            return repository.books
+        case "Currently Reading": return repository.books.filter { $0.isCurrentlyReading }
+        case "All Books": return repository.books
+        case "Lent Books": return repository.books.filter { $0.isLent }
+        default: return repository.books
         }
     }
     
@@ -120,9 +116,13 @@ struct BookshelfView: View {
                         .padding(.bottom)
                 }
             }
-            .navigationTitle("Bookshelf")
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarLeading) {
+                    Text("Bookshelf")
+                        .font(.title)
+                        .fontWeight(.semibold)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
                         authViewModel.logout()
                     }) {
@@ -155,82 +155,88 @@ struct BookshelfView: View {
 struct BookView: View {
     var book: Book
     
-    // Convert stored color string to Color
     var bookColor: Color {
-        if let colorName = book.coverColor, let color = colorFromString(colorName) {
-            return color
-        } else {
-            return .gray
-        }
+        return Color.color(from: book.coverColor)
     }
     
-    func colorFromString(_ colorName: String) -> Color? {
-        switch colorName {
+    var body: some View {
+        VStack {
+            ZStack(alignment: .center) {
+                if let thumbnailUrl = book.thumbnailUrl, let url = URL(string: thumbnailUrl) {
+                    CachedAsyncImage(url: url) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(height: 160)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .blur(radius: 3) // Add slight blur
+                            .overlay(Color.black.opacity(0.3))
+                    }
+                    .frame(height: 160)
+                } else {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(bookColor)
+                        .frame(height: 160)
+                }
+                
+                VStack {
+                    Text(book.title)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 5)
+                    
+                    Text(book.author)
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.8))
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 2)
+                    
+                    if book.isLent {
+                        HStack {
+                            Image(systemName: "person.fill")
+                                .foregroundColor(.white)
+                            Text(book.lentTo ?? "Someone")
+                                .font(.caption2)
+                                .foregroundColor(.white)
+                        }
+                        .padding(4)
+                        .background(Color.black.opacity(0.3))
+                        .cornerRadius(4)
+                        .padding(.top, 4)
+                    } else if book.isCurrentlyReading {
+                        Text("Reading")
+                            .font(.caption2)
+                            .foregroundColor(.white)
+                            .padding(4)
+                            .background(Color.green.opacity(0.7))
+                            .cornerRadius(4)
+                            .padding(.top, 4)
+                    }
+                }
+                .padding()
+            }
+            .frame(height: 160)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .shadow(radius: 2)
+        }
+    }
+}
+
+extension Color {
+    static func color(from string: String?) -> Color {
+        guard let colorName = string else {
+            return .gray
+        }
+
+        switch colorName.lowercased() {
         case "red": return .red
         case "blue": return .blue
         case "green": return .green
         case "orange": return .orange
         case "purple": return .purple
         case "yellow": return .yellow
-        default: return nil
-        }
-    }
-    
-    var body: some View {
-        VStack {
-            if let thumbnailUrl = book.thumbnailUrl, let url = URL(string: thumbnailUrl) {
-                CachedAsyncImage(url: url) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(height: 160)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                }
-                .frame(height: 160)
-            } else {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(bookColor)
-                    .frame(height: 160)
-                    .overlay(
-                        VStack {
-                            Text(book.title)
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 5)
-                            
-                            Text(book.author)
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.8))
-                                .padding(.top, 2)
-                            
-                            if book.isLent {
-                                HStack {
-                                    Image(systemName: "person.fill")
-                                        .foregroundColor(.white)
-                                    Text(book.lentTo ?? "Someone")
-                                        .font(.caption2)
-                                        .foregroundColor(.white)
-                                }
-                                .padding(4)
-                                .background(Color.black.opacity(0.3))
-                                .cornerRadius(4)
-                                .padding(.top, 4)
-                            } else if book.isCurrentlyReading {
-                                Text("Reading")
-                                    .font(.caption2)
-                                    .foregroundColor(.white)
-                                    .padding(4)
-                                    .background(Color.green.opacity(0.7))
-                                    .cornerRadius(4)
-                                    .padding(.top, 4)
-                            }
-                        }
-                    )
-                    .shadow(radius: 2)
-            }
-            
-            // Rest of your BookView
+        default: return .gray
         }
     }
 }

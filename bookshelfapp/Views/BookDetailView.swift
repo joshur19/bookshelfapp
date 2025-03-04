@@ -19,30 +19,15 @@ struct BookDetailView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     
+    var bookColor: Color {
+        return Color.color(from: book.coverColor)
+    }
+    
     init(repository: Repository, userId: String, book: Book) {
         self.repository = repository
         self.userId = userId
         self.book = book
         _isCurrentlyReading = State(initialValue: book.isCurrentlyReading)
-    }
-    
-    func colorFromString(_ colorName: String) -> Color {
-        switch colorName {
-        case "red":
-            return .red
-        case "blue":
-            return .blue
-        case "green":
-            return .green
-        case "orange":
-            return .orange
-        case "purple":
-            return .purple
-        case "yellow":
-            return .yellow
-        default:
-            return .gray
-        }
     }
     
     var body: some View {
@@ -61,7 +46,7 @@ struct BookDetailView: View {
                             .frame(width: 80, height: 120)
                         } else {
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(colorFromString(book.coverColor ?? "gray"))
+                                .fill(bookColor)
                                 .frame(width: 80, height: 120)
                         }
                         

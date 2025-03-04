@@ -42,7 +42,7 @@ struct AddBookView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Add Method")) {
+                Section(header: Text("Barcode Scanner")) {
                     Button(action: {
                         showingScanner = true
                     }) {
@@ -99,16 +99,6 @@ struct AddBookView: View {
                     .padding(.vertical, 8)
                 }
                 
-                Section(header: Text("Book Details")) {
-                    TextField("Book Title", text: $title)
-                    TextField("Author", text: $author)
-                    TextField("Published Year", text: $publishedYear)
-                        .keyboardType(.numberPad)
-                    TextField("ISBN", text: $isbn)
-                        .keyboardType(.numberPad)
-                    Toggle("Currently Reading", isOn: $isCurrentlyReading)
-                }
-                
                 // Only show color picker if no thumbnail is available
                 if bookThumbnail == nil {
                     Section(header: Text("Cover Color")) {
@@ -134,6 +124,16 @@ struct AddBookView: View {
                             .padding(.vertical, 8)
                         }
                     }
+                }
+                
+                Section(header: Text("Book Details")) {
+                    TextField("Book Title", text: $title)
+                    TextField("Author", text: $author)
+                    TextField("Published Year", text: $publishedYear)
+                        .keyboardType(.numberPad)
+                    TextField("ISBN", text: $isbn)
+                        .keyboardType(.numberPad)
+                    Toggle("Currently Reading", isOn: $isCurrentlyReading)
                 }
                 
                 if let errorMessage = errorMessage {
