@@ -44,6 +44,8 @@ class AuthViewModel: ObservableObject {
     }
     
     func register(email: String, password: String, completion: @escaping (String?) -> Void) {
+        self.isRegistering = true
+        
         Auth.auth().createUser(withEmail: email, password: password) { [weak self] result, error in
             guard let self = self else { return }
             
