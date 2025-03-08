@@ -109,6 +109,7 @@ struct SearchBar: View {
         .padding(8)
         .background(Color(.systemGray6))
         .cornerRadius(10)
+        .contentShape(Rectangle())
     }
 }
 
@@ -121,6 +122,13 @@ struct SearchResultRow: View {
     @State private var requestSent = false
     @State private var errorMessage: String? = nil
     
+    var displayName: String {
+        if let name = user.displayName, !name.isEmpty {
+            return name
+        }
+        return user.username ?? "User"
+    }
+    
     var body: some View {
         VStack {
             HStack {
@@ -130,7 +138,7 @@ struct SearchResultRow: View {
                     .foregroundColor(.blue)
                 
                 VStack(alignment: .leading) {
-                    Text(user.displayName ?? user.username ?? "User")
+                    Text(displayName)
                         .font(.headline)
                     
                     if let username = user.username {
@@ -161,6 +169,7 @@ struct SearchResultRow: View {
                             .foregroundColor(.white)
                             .cornerRadius(5)
                     }
+                    .contentShape(Rectangle())
                 }
             }
             

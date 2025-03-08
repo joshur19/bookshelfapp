@@ -638,6 +638,47 @@ class Repository: ObservableObject {
                     completion(error)
                 } else {
                     print("Successfully accepted friend request from \(friendId)")
+                    
+                    // Update local data immediately to reflect changes
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        // Update friends list
+                        if let currentUser = self.currentUser {
+                            var updatedFriends = currentUser.friends ?? []
+                            if !updatedFriends.contains(friendId) {
+                                updatedFriends.append(friendId)
+                            }
+                            
+                            // Update friend requests list
+                            var updatedRequests = currentUser.friendRequests ?? []
+                            if let index = updatedRequests.firstIndex(of: friendId) {
+                                updatedRequests.remove(at: index)
+                            }
+                            
+                            // Update the current user object
+                            var updatedUser = currentUser
+                            updatedUser.friends = updatedFriends
+                            updatedUser.friendRequests = updatedRequests
+                            self.currentUser = updatedUser
+                            
+                            // Fetch the new friend's data if not already in friends list
+                            if !self.friends.contains(where: { $0.id == friendId }) {
+                                self.db.collection("users").document(friendId).getDocument { (document, error) in
+                                    if let document = document, document.exists, 
+                                       let friendData = try? document.data(as: AppUser.self) {
+                                        self.friends.append(friendData)
+                                    }
+                                }
+                            }
+                            
+                            // Update friend requests UI
+                            self.friendRequests.removeAll { $0.id == friendId }
+                        }
+                    }
+                    
+                    // Refresh data from server
+                    self.fetchCurrentUser(userId: currentUserId)
                     completion(nil)
                 }
             }
@@ -651,11 +692,27 @@ class Repository: ObservableObject {
         // Update the document to remove the friend request
         currentUserRef.updateData([
             "friendRequests": FieldValue.arrayRemove([friendId])
-        ]) { error in
+        ]) { [weak self] error in
+            guard let self = self else { return }
+            
             if let error = error {
                 print("Error rejecting friend request: \(error)")
                 completion(error)
             } else {
+                // Update local data immediately
+                DispatchQueue.main.async {
+                    self.friendRequests.removeAll { $0.id == friendId }
+                    
+                    // Also update the current user object
+                    if var currentUser = self.currentUser, var requests = currentUser.friendRequests {
+                        if let index = requests.firstIndex(of: friendId) {
+                            requests.remove(at: index)
+                            currentUser.friendRequests = requests
+                            self.currentUser = currentUser
+                        }
+                    }
+                }
+                
                 completion(nil)
             }
         }

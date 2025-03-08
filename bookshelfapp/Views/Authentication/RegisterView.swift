@@ -41,33 +41,73 @@ struct RegisterView: View {
             }
 
             VStack(spacing: 16) {
-                TextField("Email", text: $email)
-                    .padding()
-                    .background(Color(.systemBackground))
-                    .foregroundColor(.primary) // Ensures text adapts to light/dark mode
-                    .cornerRadius(8)
-                    .keyboardType(.emailAddress)
-                    .autocapitalization(.none)
+                // Email field
+                ZStack(alignment: .leading) {
+                    if email.isEmpty {
+                        Text("Email")
+                            .foregroundColor(Color.primary.opacity(0.6))
+                            .padding()
+                    }
+                    
+                    TextField("", text: $email)
+                        .padding()
+                        .foregroundColor(.primary)
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
+                }
+                .background(Color(.systemBackground))
+                .cornerRadius(8)
+                .contentShape(Rectangle())
                 
-                TextField("Username", text: $username)
-                    .padding()
-                    .background(Color(.systemBackground))
-                    .foregroundColor(.primary)
-                    .cornerRadius(8)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
+                // Username field
+                ZStack(alignment: .leading) {
+                    if username.isEmpty {
+                        Text("Username")
+                            .foregroundColor(Color.primary.opacity(0.6))
+                            .padding()
+                    }
+                    
+                    TextField("", text: $username)
+                        .padding()
+                        .foregroundColor(.primary)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                }
+                .background(Color(.systemBackground))
+                .cornerRadius(8)
+                .contentShape(Rectangle())
 
-                SecureField("Password", text: $password)
-                    .padding()
-                    .background(Color(.systemBackground))
-                    .foregroundColor(.primary)
-                    .cornerRadius(8)
+                // Password field
+                ZStack(alignment: .leading) {
+                    if password.isEmpty {
+                        Text("Password")
+                            .foregroundColor(Color.primary.opacity(0.6))
+                            .padding()
+                    }
+                    
+                    SecureField("", text: $password)
+                        .padding()
+                        .foregroundColor(.primary)
+                }
+                .background(Color(.systemBackground))
+                .cornerRadius(8)
+                .contentShape(Rectangle())
 
-                SecureField("Confirm Password", text: $confirmPassword)
-                    .padding()
-                    .background(Color(.systemBackground))
-                    .foregroundColor(.primary)
-                    .cornerRadius(8)
+                // Confirm Password field
+                ZStack(alignment: .leading) {
+                    if confirmPassword.isEmpty {
+                        Text("Confirm Password")
+                            .foregroundColor(Color.primary.opacity(0.6))
+                            .padding()
+                    }
+                    
+                    SecureField("", text: $confirmPassword)
+                        .padding()
+                        .foregroundColor(.primary)
+                }
+                .background(Color(.systemBackground))
+                .cornerRadius(8)
+                .contentShape(Rectangle())
             }
             .padding(.horizontal)
 
@@ -147,6 +187,7 @@ struct RegisterView: View {
             }
             .disabled(isLoading) // Disable button when loading
             .padding(.horizontal)
+            .contentShape(Rectangle()) // Add this line to make the entire button area clickable
 
             Spacer()
         }
@@ -161,7 +202,6 @@ struct RegisterView: View {
         }
     }
 }
-
 
 #Preview {
     RegisterView(successMessage: .constant("Registration successful!"))

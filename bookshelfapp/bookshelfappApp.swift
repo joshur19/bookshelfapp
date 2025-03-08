@@ -65,5 +65,23 @@ struct MainTabView: View {
                 }
                 .tag(2)
         }
+        .transition(.slide)
+        .gesture(
+            DragGesture()
+                .onEnded { gesture in
+                    let width = UIScreen.main.bounds.width
+                    if gesture.translation.width > width * 0.25 && selectedTab > 0 {
+                        // Swipe right - go to previous tab
+                        withAnimation {
+                            selectedTab -= 1
+                        }
+                    } else if gesture.translation.width < -width * 0.25 && selectedTab < 2 {
+                        // Swipe left - go to next tab
+                        withAnimation {
+                            selectedTab += 1
+                        }
+                    }
+                }
+        )
     }
 }

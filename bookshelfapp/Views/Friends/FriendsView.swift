@@ -16,10 +16,11 @@ struct FriendsView: View {
     @State private var friendBooks: [Book] = []
     @State private var isLoadingBooks = false
     @State private var errorMessage: String? = nil
+    @State private var refreshTrigger = false
     
     var body: some View {
         NavigationView {
-            VStack {
+            ZStack(alignment: .bottom) {
                 if repository.friends.isEmpty && repository.friendRequests.isEmpty {
                     EmptyFriendsView()
                 } else {
@@ -27,15 +28,19 @@ struct FriendsView: View {
                         if !repository.friendRequests.isEmpty {
                             Section(header: Text("Friend Requests")) {
                                 ForEach(repository.friendRequests) { user in
-                                    FriendRequestRow(user: user)
+                                    FriendRequestRow(user: user, onRequestHandled: {
+                                        refreshFriends()
+                                    })
+                                    .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
                                 }
                             }
                         }
                         
                         if !repository.friends.isEmpty {
-                            Section(header: Text("Friends")) {
+                            Section(header: Text("Friend List")) {
                                 ForEach(repository.friends) { friend in
                                     FriendRow(friend: friend)
+                                        .contentShape(Rectangle())
                                         .onTapGesture {
                                             selectedFriend = friend
                                             loadFriendBooks(friendId: friend.id ?? "")
@@ -43,6 +48,10 @@ struct FriendsView: View {
                                 }
                             }
                         }
+                    }
+                    .id(refreshTrigger)
+                    .refreshable {
+                        refreshFriends()
                     }
                 }
                 
@@ -56,16 +65,33 @@ struct FriendsView: View {
                         .foregroundColor(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                         .padding(.horizontal)
-                        .padding(.bottom)
+                }
+                .padding(.bottom)
+                .contentShape(Rectangle())
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Text("Friends")
+                        .font(.title)
+                        .fontWeight(.semibold)
                 }
             }
-            .navigationTitle("Friends")
             .sheet(isPresented: $showSearchSheet) {
                 SearchUsersView()
             }
             .sheet(item: $selectedFriend) { friend in
                 FriendProfileView(friend: friend, books: friendBooks, isLoading: isLoadingBooks)
             }
+        }
+        .onAppear {
+            refreshFriends()
+        }
+    }
+    
+    private func refreshFriends() {
+        if let userId = authViewModel.user?.uid {
+            repository.fetchCurrentUser(userId: userId)
+            refreshTrigger.toggle()
         }
     }
     
@@ -88,32 +114,44 @@ struct FriendsView: View {
 
 struct EmptyFriendsView: View {
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
+            Spacer()
+            
             Image(systemName: "person.2")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 80, height: 80)
+                .font(.system(size: 50))
                 .foregroundColor(.gray)
+                .padding(.bottom, 8)
             
             Text("No Friends Yet")
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(.headline)
+                .foregroundColor(.gray)
             
             Text("Connect with friends to see their bookshelves and share your reading journey.")
-                .font(.body)
+                .font(.subheadline)
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal)
+                .padding(.horizontal, 32)
+                .padding(.bottom, 32)
             
             Spacer()
+            
+            // Add a spacer with the height of the button plus its padding
+            // to ensure proper vertical centering
+            Spacer()
+                .frame(height: 80)
         }
-        .padding(.top, 100)
-        .padding(.horizontal)
     }
 }
 
 struct FriendRow: View {
     var friend: AppUser
+    
+    var displayName: String {
+        if let name = friend.displayName, !name.isEmpty {
+            return name
+        }
+        return friend.username ?? "User"
+    }
     
     var body: some View {
         HStack {
@@ -123,7 +161,7 @@ struct FriendRow: View {
                 .foregroundColor(.blue)
             
             VStack(alignment: .leading) {
-                Text(friend.displayName ?? friend.username ?? "User")
+                Text(displayName)
                     .font(.headline)
                 
                 if let username = friend.username {
@@ -139,11 +177,21 @@ struct FriendRow: View {
                 .foregroundColor(.gray)
         }
         .padding(.vertical, 4)
+        .contentShape(Rectangle())
     }
 }
 
 struct FriendRequestRow: View {
     var user: AppUser
+    var onRequestHandled: () -> Void
+    
+    var displayName: String {
+        if let name = user.displayName, !name.isEmpty {
+            return name
+        }
+        return user.username ?? "User"
+    }
+    
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var repository: Repository
     @State private var isAccepting = false
@@ -151,15 +199,15 @@ struct FriendRequestRow: View {
     @State private var errorMessage: String? = nil
     
     var body: some View {
-        VStack {
-            HStack {
+        VStack(spacing: 8) {
+            HStack(alignment: .center) {
                 Image(systemName: "person.circle.fill")
                     .resizable()
                     .frame(width: 40, height: 40)
                     .foregroundColor(.blue)
                 
                 VStack(alignment: .leading) {
-                    Text(user.displayName ?? user.username ?? "User")
+                    Text(displayName)
                         .font(.headline)
                     
                     if let username = user.username {
@@ -174,22 +222,17 @@ struct FriendRequestRow: View {
                 if isAccepting || isRejecting {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle())
+                        .frame(width: 120)
                 } else {
-                    HStack {
-                        Button(action: {
-                            acceptFriendRequest()
-                        }) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
-                                .font(.title2)
+                    ViewThatFits {
+                        HStack(spacing: 12) {
+                            acceptButton
+                            declineButton
                         }
                         
-                        Button(action: {
-                            rejectFriendRequest()
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.red)
-                                .font(.title2)
+                        VStack(spacing: 8) {
+                            acceptButton
+                            declineButton
                         }
                     }
                 }
@@ -202,7 +245,57 @@ struct FriendRequestRow: View {
                     .padding(.top, 4)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+    }
+    
+    private var acceptButton: some View {
+        Button(action: {
+            acceptFriendRequest()
+        }) {
+            HStack {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 18))
+                Text("Accept")
+                    .font(.system(size: 14, weight: .semibold))
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .frame(minWidth: 100)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.green)
+            )
+            .foregroundColor(.white)
+            .shadow(color: Color.green.opacity(0.3), radius: 3, x: 0, y: 2)
+        }
+        .buttonStyle(ScaleButtonStyle())
+        .contentShape(Rectangle())
+    }
+    
+    private var declineButton: some View {
+        Button(action: {
+            rejectFriendRequest()
+        }) {
+            HStack {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 18))
+                Text("Decline")
+                    .font(.system(size: 14, weight: .semibold))
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .frame(minWidth: 100)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.red)
+            )
+            .foregroundColor(.white)
+            .shadow(color: Color.red.opacity(0.3), radius: 3, x: 0, y: 2)
+        }
+        .buttonStyle(ScaleButtonStyle())
+        .contentShape(Rectangle())
     }
     
     private func acceptFriendRequest() {
@@ -211,12 +304,14 @@ struct FriendRequestRow: View {
             return
         }
         
-        print("Accepting friend request from \(friendId) to \(currentUserId)")
+        print("Starting friend request acceptance from \(friendId) to \(currentUserId)")
         isAccepting = true
+        isRejecting = true // Disable both buttons during operation
         errorMessage = nil
         
         repository.acceptFriendRequest(currentUserId: currentUserId, friendId: friendId) { error in
             isAccepting = false
+            isRejecting = false // Re-enable both buttons
             
             if let error = error {
                 print("Error accepting friend request: \(error.localizedDescription)")
@@ -229,6 +324,10 @@ struct FriendRequestRow: View {
                         repository.fetchCurrentUser(userId: userId)
                     }
                 }
+            } else {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    onRequestHandled()
+                }
             }
         }
     }
@@ -239,16 +338,22 @@ struct FriendRequestRow: View {
             return
         }
         
-        print("Rejecting friend request from \(friendId) to \(currentUserId)")
+        print("Starting friend request rejection from \(friendId) to \(currentUserId)")
         isRejecting = true
+        isAccepting = true // Disable both buttons during operation
         errorMessage = nil
         
         repository.rejectFriendRequest(currentUserId: currentUserId, friendId: friendId) { error in
             isRejecting = false
+            isAccepting = false // Re-enable both buttons
             
             if let error = error {
                 print("Error rejecting friend request: \(error.localizedDescription)")
                 errorMessage = "Failed to reject: \(error.localizedDescription)"
+            } else {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    onRequestHandled()
+                }
             }
         }
     }

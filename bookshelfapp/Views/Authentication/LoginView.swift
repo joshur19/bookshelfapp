@@ -44,40 +44,63 @@ struct LoginView: View {
                 }
 
                 VStack(spacing: 16) {
-                    TextField("Email", text: $email)
-                        .padding()
-                        .background(Color(.systemBackground))
-                        .foregroundColor(.primary)
-                        .cornerRadius(8)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
+                    // Email field
+                    ZStack(alignment: .leading) {
+                        if email.isEmpty {
+                            Text("Email")
+                                .foregroundColor(Color.primary.opacity(0.6))
+                                .padding()
+                        }
+                        
+                        TextField("", text: $email)
+                            .padding()
+                            .foregroundColor(.primary)
+                            .keyboardType(.emailAddress)
+                            .autocapitalization(.none)
+                    }
+                    .background(Color(.systemBackground))
+                    .cornerRadius(8)
+                    .contentShape(Rectangle())
 
-                    SecureField("Password", text: $password)
-                        .padding()
-                        .background(Color(.systemBackground))
-                        .foregroundColor(.primary)
-                        .cornerRadius(8)
+                    // Password field
+                    ZStack(alignment: .leading) {
+                        if password.isEmpty {
+                            Text("Password")
+                                .foregroundColor(Color.primary.opacity(0.6))
+                                .padding()
+                        }
+                        
+                        SecureField("", text: $password)
+                            .padding()
+                            .foregroundColor(.primary)
+                    }
+                    .background(Color(.systemBackground))
+                    .cornerRadius(8)
+                    .contentShape(Rectangle())
                 }
                 .padding(.horizontal)
 
                 Button(action: {
                     login()
                 }) {
-                    if isLoggingIn {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                    } else {
-                        Text("Login")
-                            .font(.headline)
+                    HStack {
+                        if isLoggingIn {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        } else {
+                            Text("Login")
+                                .font(.headline)
+                        }
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
                 }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(10)
                 .padding(.horizontal)
                 .disabled(isLoggingIn)
+                .contentShape(Rectangle())
 
                 NavigationLink("Don't have an account? Register", destination: RegisterView(successMessage: $successMessage).environmentObject(repository))
                     .font(.subheadline)
@@ -107,11 +130,6 @@ struct LoginView: View {
                 errorMessage = error
             } else {
                 successMessage = "Login successful!"
-                
-                // Fetch user data after successful login
-                if let userId = authViewModel.user?.uid {
-                    repository.fetchCurrentUser(userId: userId)
-                }
             }
         }
     }
