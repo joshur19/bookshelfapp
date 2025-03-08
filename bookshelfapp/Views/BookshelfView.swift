@@ -122,13 +122,6 @@ struct BookshelfView: View {
                         .font(.title)
                         .fontWeight(.semibold)
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: {
-                        authViewModel.logout()
-                    }) {
-                        Label("Logout", systemImage: "rectangle.portrait.and.arrow.right")
-                    }
-                }
             }
             .sheet(isPresented: $showAddBookSheet) {
                 AddBookView(repository: repository, userId: authViewModel.user?.uid ?? "")

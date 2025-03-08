@@ -15,6 +15,7 @@ struct LoginView: View {
     @State private var password: String = ""
     @State private var errorMessage: String?
     @State private var successMessage: String?
+    @State private var isLoggingIn: Bool = false
     
     var body: some View {
         NavigationView {
@@ -60,24 +61,23 @@ struct LoginView: View {
                 .padding(.horizontal)
 
                 Button(action: {
-                    authViewModel.login(email: email, password: password) { error in
-                        if let error = error {
-                            errorMessage = error
-                        } else {
-                            successMessage = "Login successful!"
-                            errorMessage = nil
-                        }
-                    }
+                    login()
                 }) {
-                    Text("Login")
-                        .font(.headline)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                    if isLoggingIn {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    } else {
+                        Text("Login")
+                            .font(.headline)
+                    }
                 }
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(10)
                 .padding(.horizontal)
+                .disabled(isLoggingIn)
 
                 NavigationLink("Don't have an account? Register", destination: RegisterView(successMessage: $successMessage).environmentObject(repository))
                     .font(.subheadline)
@@ -92,6 +92,26 @@ struct LoginView: View {
                 email = ""
                 password = ""
                 errorMessage = nil
+            }
+        }
+    }
+    
+    private func login() {
+        isLoggingIn = true
+        errorMessage = nil
+        
+        authViewModel.login(email: email, password: password) { error in
+            isLoggingIn = false
+            
+            if let error = error {
+                errorMessage = error
+            } else {
+                successMessage = "Login successful!"
+                
+                // Fetch user data after successful login
+                if let userId = authViewModel.user?.uid {
+                    repository.fetchCurrentUser(userId: userId)
+                }
             }
         }
     }

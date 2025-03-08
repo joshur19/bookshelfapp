@@ -14,6 +14,7 @@ struct RegisterView: View {
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var confirmPassword: String = ""
+    @State private var username: String = ""
     @State private var errorMessage: String?
     @State private var isLoading: Bool = false
     
@@ -47,6 +48,14 @@ struct RegisterView: View {
                     .cornerRadius(8)
                     .keyboardType(.emailAddress)
                     .autocapitalization(.none)
+                
+                TextField("Username", text: $username)
+                    .padding()
+                    .background(Color(.systemBackground))
+                    .foregroundColor(.primary)
+                    .cornerRadius(8)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
 
                 SecureField("Password", text: $password)
                     .padding()
@@ -65,6 +74,12 @@ struct RegisterView: View {
             Button(action: {
                 isLoading = true
                 
+                guard !username.isEmpty else {
+                    self.errorMessage = "Username is required"
+                    isLoading = false
+                    return
+                }
+                
                 guard password == confirmPassword else {
                     self.errorMessage = "Passwords do not match"
                     isLoading = false
@@ -77,18 +92,36 @@ struct RegisterView: View {
                         isLoading = false
                     } else {
                         if let user = authViewModel.user {
-                            
-                            repository.createUserDocument(userId: user.uid, email: email) { firestoreError in
-                                if firestoreError != nil {
-                                    errorMessage = "Account created but failed to set up user data"
-                                    isLoading = false
+                            // Attempt to create the user document with username
+                            repository.createUserDocument(userId: user.uid, email: email, username: username) { firestoreError in
+                                if let firestoreError = firestoreError {
+                                    if let nsError = firestoreError as NSError?, nsError.domain == "Repository" && nsError.code == 3 {
+                                        // Username already taken
+                                        errorMessage = "Username already taken. Please choose another."
+                                        
+                                        // Delete the auth account since we can't use this username
+                                        authViewModel.deleteAuthAccount(user: user) {
+                                            // Do nothing, the account is already deleted
+                                        }
+                                        isLoading = false
+                                    } else {
+                                        // Other Firestore error
+                                        errorMessage = "Account created but failed to set up user data: \(firestoreError.localizedDescription)"
+                                        print("Firestore error: \(firestoreError.localizedDescription)")
+                                        
+                                        // Delete the auth account since Firestore setup failed
+                                        authViewModel.deleteAuthAccount(user: user) {
+                                            // Do nothing, the account is already deleted
+                                        }
+                                        isLoading = false
+                                    }
                                 } else {
+                                    // Successfully created user document and username entry, now sign out
                                     authViewModel.completeRegistration()
                                     isLoading = false
                                     successMessage = "Registration successful! Please log in."
                                     presentationMode.wrappedValue.dismiss()
                                 }
-                                
                             }
                         } else {
                             errorMessage = "User registration failed. Please try again."
@@ -126,6 +159,7 @@ struct RegisterView: View {
             password = ""
             errorMessage = nil
             confirmPassword = ""
+            username = ""
         }
     }
 }
