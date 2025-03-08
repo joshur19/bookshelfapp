@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		037F343E2D7C760F003CE84A /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 037F343D2D7C760F003CE84A /* README.md */; };
 		03AC7FF32D6A153100256F8C /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 03AC7FF22D6A153100256F8C /* FirebaseAuth */; };
 		03AC7FF52D6A153100256F8C /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 03AC7FF42D6A153100256F8C /* FirebaseFirestore */; };
 		03F2E0D12D748BC2008A1206 /* CodeScanner in Frameworks */ = {isa = PBXBuildFile; productRef = 03F2E0D02D748BC2008A1206 /* CodeScanner */; };
@@ -30,6 +31,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		037F343D2D7C760F003CE84A /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		03B4038E2D69EAD200F0AD08 /* bookshelfapp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = bookshelfapp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		03B4039E2D69EAD400F0AD08 /* bookshelfappTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = bookshelfappTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		03B403A82D69EAD400F0AD08 /* bookshelfappUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = bookshelfappUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -88,6 +90,7 @@
 				03B403A12D69EAD400F0AD08 /* bookshelfappTests */,
 				03B403AB2D69EAD400F0AD08 /* bookshelfappUITests */,
 				03B4038F2D69EAD200F0AD08 /* Products */,
+				037F343D2D7C760F003CE84A /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -228,6 +231,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				037F343E2D7C760F003CE84A /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
