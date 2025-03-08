@@ -131,13 +131,9 @@ struct BookshelfView: View {
             }
             .onAppear {
                 if let userId = authViewModel.user?.uid {
-                    withAnimation(nil) {
-                        repository.fetchBooks(for: userId)
-                    }
+                    repository.fetchCurrentUser(userId: userId)
+                    repository.fetchBooks(for: userId)
                 }
-            }
-            .onDisappear {
-                repository.cleanUp()
             }
             .animation(nil, value: repository.isLoading)
         }
@@ -162,7 +158,7 @@ struct BookView: View {
                             .aspectRatio(contentMode: .fill)
                             .frame(height: 160)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
-                            .blur(radius: 3) // Add slight blur
+                            .blur(radius: 3)
                             .overlay(Color.black.opacity(0.3))
                     }
                     .frame(height: 160)

@@ -78,58 +78,6 @@ struct ProfileView: View {
     }
 }
 
-struct SetupProfileView: View {
-    @Binding var username: String
-    @Binding var displayName: String
-    @Binding var bio: String
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Complete Your Profile")
-                .font(.title)
-                .fontWeight(.bold)
-            
-            Text("Please set up your profile to continue")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-                .multilineTextAlignment(.center)
-            
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Username (required)")
-                    .font(.headline)
-                
-                TextField("Username", text: $username)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(8)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
-            }
-            
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Display Name (optional)")
-                    .font(.headline)
-                
-                TextField("Display Name", text: $displayName)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(8)
-            }
-            
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Bio (optional)")
-                    .font(.headline)
-                
-                TextEditor(text: $bio)
-                    .padding(4)
-                    .frame(height: 100)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(8)
-            }
-        }
-    }
-}
-
 struct ProfileInfoView: View {
     var username: String
     var displayName: String

@@ -51,100 +51,7 @@ class Repository: ObservableObject {
     private var friendsListenerRegistration: ListenerRegistration?
     private var friendRequestsListenerRegistration: ListenerRegistration?
     
-    func createUserDocument(userId: String, email: String, username: String? = nil, completion: @escaping (Error?) -> Void) {
-        print("Starting to create user document for userId: \(userId)")
-        
-        // Check if username is already taken using the usernames collection
-        if let username = username {
-            // Check if the username document exists in the usernames collection
-            db.collection("usernames").document(username).getDocument { (document, error) in
-                if let error = error {
-                    print("Error checking username: \(error)")
-                    completion(error)
-                    return
-                }
-                
-                if let document = document, document.exists {
-                    print("Username '\(username)' is already taken")
-                    completion(NSError(domain: "Repository", code: 3, userInfo: [NSLocalizedDescriptionKey: "Username already taken"]))
-                    return
-                }
-                
-                // Username is available, create user document and username document in a transaction
-                self.createUserWithUsername(userId: userId, email: email, username: username, completion: completion)
-            }
-        } else {
-            // No username provided, create user document without username
-            createUser(userId: userId, email: email, username: nil, completion: completion)
-        }
-    }
-    
-    private func createUserWithUsername(userId: String, email: String, username: String, completion: @escaping (Error?) -> Void) {
-        // Use a transaction to ensure both the user document and username document are created atomically
-        db.runTransaction({ (transaction, errorPointer) -> Any? in
-            // Create the user document data
-            var userData: [String: Any] = [
-                "email": email,
-                "username": username,
-                "friends": [],
-                "friendRequests": [],
-                "createdAt": Timestamp(date: Date()),
-                "lastActive": Timestamp(date: Date())
-            ]
-            
-            // Create the username document data
-            let usernameData: [String: Any] = [
-                "uid": userId,
-                "displayName": username,
-                "createdAt": Timestamp(date: Date())
-            ]
-            
-            // Set the user document
-            let userRef = self.db.collection("users").document(userId)
-            transaction.setData(userData, forDocument: userRef)
-            
-            // Set the username document
-            let usernameRef = self.db.collection("usernames").document(username)
-            transaction.setData(usernameData, forDocument: usernameRef)
-            
-            return nil
-        }) { (object, error) in
-            if let error = error {
-                print("Error creating user and username documents: \(error.localizedDescription)")
-                completion(error)
-            } else {
-                print("Successfully created user document for userId: \(userId) with username: \(username)")
-                completion(nil)
-            }
-        }
-    }
-    
-    private func createUser(userId: String, email: String, username: String?, completion: @escaping (Error?) -> Void) {
-        var userData: [String: Any] = [
-            "email": email,
-            "friends": [],
-            "friendRequests": [],
-            "createdAt": Timestamp(date: Date()),
-            "lastActive": Timestamp(date: Date())
-        ]
-        
-        if let username = username {
-            userData["username"] = username
-        }
-        
-        print("Creating user document for userId: \(userId) with username: \(username ?? "none")")
-        
-        // Create the user document
-        db.collection("users").document(userId).setData(userData) { error in
-            if let error = error {
-                print("Error creating user document: \(error.localizedDescription)")
-                completion(error)
-            } else {
-                print("Successfully created user document for userId: \(userId)")
-                completion(nil)
-            }
-        }
-    }
+    // MARK: - Book Manipulation
     
     func fetchBooks(for userId: String) {
         isLoading = true
@@ -299,6 +206,72 @@ class Repository: ObservableObject {
     }
     
     // MARK: - User Profile Methods
+    
+    func createUser(userId: String, email: String, username: String? = nil, completion: @escaping (Error?) -> Void) {
+        // Check if username is already taken using the usernames collection
+        if let username = username {
+            // Check if the username document exists in the usernames collection
+            db.collection("usernames").document(username).getDocument { (document, error) in
+                if let error = error {
+                    print("Error checking username: \(error)")
+                    completion(error)
+                    return
+                }
+                
+                if let document = document, document.exists {
+                    print("Username '\(username)' is already taken")
+                    completion(NSError(domain: "Repository", code: 3, userInfo: [NSLocalizedDescriptionKey: "Username already taken"]))
+                    return
+                }
+                
+                // Username is available, create user document and username document in a transaction
+                self.createUserDocument(userId: userId, email: email, username: username, completion: completion)
+            }
+        } else {
+            // No username provided
+            print("No username provided!")
+            return
+        }
+    }
+    
+    private func createUserDocument(userId: String, email: String, username: String, completion: @escaping (Error?) -> Void) {
+        db.runTransaction({ (transaction, errorPointer) -> Any? in
+            // Create the user document data
+            let userData: [String: Any] = [
+                "email": email,
+                "username": username,
+                "friends": [],
+                "friendRequests": [],
+                "createdAt": Timestamp(date: Date()),
+                "lastActive": Timestamp(date: Date())
+            ]
+            
+            // Create the username document data
+            let usernameData: [String: Any] = [
+                "uid": userId,
+                "displayName": username,
+                "createdAt": Timestamp(date: Date())
+            ]
+            
+            // Set the user document
+            let userRef = self.db.collection("users").document(userId)
+            transaction.setData(userData, forDocument: userRef)
+            
+            // Set the username document
+            let usernameRef = self.db.collection("usernames").document(username)
+            transaction.setData(usernameData, forDocument: usernameRef)
+            
+            return nil
+        }) { (object, error) in
+            if let error = error {
+                print("Error creating user and username documents: \(error.localizedDescription)")
+                completion(error)
+            } else {
+                print("Successfully created user document for userId: \(userId) with username: \(username)")
+                completion(nil)
+            }
+        }
+    }
     
     func fetchCurrentUser(userId: String) {
         userListenerRegistration = db.collection("users").document(userId)

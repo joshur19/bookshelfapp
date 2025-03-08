@@ -16,13 +16,10 @@ struct bookshelfappApp: App {
     init() {
         FirebaseApp.configure()
         
-        // Configure URLCache with 50MB disk cache and 10MB memory cache
         let memoryCapacity = 50 * 1024 * 1024
         let diskCapacity = 100 * 1024 * 1024
         let cache = URLCache(memoryCapacity: memoryCapacity, diskCapacity: diskCapacity, directory: nil)
-        URLCache.shared = cache
-        
-        print("App initialized")
+        URLCache.shared = cache // Configure URLCache with 50MB disk cache and 10MB memory cache
     }
     
     var body: some Scene {
@@ -31,21 +28,13 @@ struct bookshelfappApp: App {
                 MainTabView()
                     .environmentObject(authViewModel)
                     .environmentObject(repository)
-                    .onAppear {
-                        print("MainTabView appeared, user is logged in")
-                        if let userId = authViewModel.user?.uid {
-                            print("Fetching data for user: \(userId)")
-                            repository.fetchCurrentUser(userId: userId)
-                            repository.fetchBooks(for: userId)
-                        }
+                    .onDisappear {
+                        repository.cleanUp()
                     }
             } else {
                 LoginView()
                     .environmentObject(authViewModel)
                     .environmentObject(repository)
-                    .onAppear {
-                        print("LoginView appeared, user is not logged in")
-                    }
             }
         }
     }

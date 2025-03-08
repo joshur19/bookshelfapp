@@ -65,29 +65,13 @@ class AuthViewModel: ObservableObject {
             self.isRegistering = true
             self.user = user
             
-            // Complete the registration process
             completion(nil)
-        }
-    }
-    
-    func deleteAuthAccount(user: FirebaseAuth.User, completion: @escaping () -> Void) {
-        user.delete { error in
-            if let error = error {
-                print("Error deleting user account: \(error.localizedDescription)")
-            } else {
-                print("User account deleted due to Firestore setup failure")
-            }
-            self.isRegistering = false
-            self.user = nil
-            self.isLoggedIn = false
-            completion()
         }
     }
     
     func completeRegistration() {
         do {
-            // Sign out manually after registering, counter-acting Firebase's built-in createUser() behaviour
-            print("Signing out after registration")
+            // Sign out manually after registering, counteracting Firebase's built-in createUser() behaviour
             try Auth.auth().signOut()
             self.isRegistering = false
             self.user = nil
@@ -104,6 +88,20 @@ class AuthViewModel: ObservableObject {
             self.isLoggedIn = false
         } catch {
             print("Error logging out: \(error.localizedDescription)")
+        }
+    }
+    
+    func deleteAuthAccount(user: FirebaseAuth.User, completion: @escaping () -> Void) {
+        user.delete { error in
+            if let error = error {
+                print("Error deleting user account: \(error.localizedDescription)")
+            } else {
+                print("User account deleted due to Firestore setup failure")
+            }
+            self.isRegistering = false
+            self.user = nil
+            self.isLoggedIn = false
+            completion()
         }
     }
 }

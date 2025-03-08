@@ -60,13 +60,13 @@ struct RegisterView: View {
                 SecureField("Password", text: $password)
                     .padding()
                     .background(Color(.systemBackground))
-                    .foregroundColor(.primary) // Ensures text is visible
+                    .foregroundColor(.primary)
                     .cornerRadius(8)
 
                 SecureField("Confirm Password", text: $confirmPassword)
                     .padding()
                     .background(Color(.systemBackground))
-                    .foregroundColor(.primary) // Ensures text is visible
+                    .foregroundColor(.primary)
                     .cornerRadius(8)
             }
             .padding(.horizontal)
@@ -93,7 +93,7 @@ struct RegisterView: View {
                     } else {
                         if let user = authViewModel.user {
                             // Attempt to create the user document with username
-                            repository.createUserDocument(userId: user.uid, email: email, username: username) { firestoreError in
+                            repository.createUser(userId: user.uid, email: email, username: username) { firestoreError in
                                 if let firestoreError = firestoreError {
                                     if let nsError = firestoreError as NSError?, nsError.domain == "Repository" && nsError.code == 3 {
                                         // Username already taken
@@ -101,7 +101,6 @@ struct RegisterView: View {
                                         
                                         // Delete the auth account since we can't use this username
                                         authViewModel.deleteAuthAccount(user: user) {
-                                            // Do nothing, the account is already deleted
                                         }
                                         isLoading = false
                                     } else {
@@ -111,7 +110,6 @@ struct RegisterView: View {
                                         
                                         // Delete the auth account since Firestore setup failed
                                         authViewModel.deleteAuthAccount(user: user) {
-                                            // Do nothing, the account is already deleted
                                         }
                                         isLoading = false
                                     }

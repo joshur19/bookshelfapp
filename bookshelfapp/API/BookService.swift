@@ -38,15 +38,12 @@ class BookService {
                     // Extract only relevant book information
                     let title = volumeInfo["title"] as? String ?? "Unknown Title"
                     
-                    // Extract authors
                     let authorsArray = volumeInfo["authors"] as? [String]
                     let author = authorsArray?.joined(separator: ", ") ?? "Unknown Author"
                     
-                    // Extract publish year from publishedDate (format could be YYYY-MM-DD or just YYYY)
                     let publishedDate = volumeInfo["publishedDate"] as? String ?? ""
                     let publishedYear = publishedDate.prefix(4)
                     
-                    // Extract thumbnail URL
                     var thumbnailUrl: String? = nil
                     if let imageLinks = volumeInfo["imageLinks"] as? [String: Any] {
                         thumbnailUrl = imageLinks["thumbnail"] as? String
@@ -79,7 +76,7 @@ struct BookDetails {
     let publishedYear: String
     let thumbnailUrl: String?
     
-    // Helper method to convert these details to your Book model
+    // Convert these details to book model
     func toBook() -> Book {
         return Book(
             id: nil,
