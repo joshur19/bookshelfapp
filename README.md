@@ -45,10 +45,10 @@ Digitally catalog your books by scanning barcodes (ISBN lookup) or adding them m
 5. Build and run in Xcode
 
 ## 📸 Screenshots
-<div style="display: flex; justify-content: center; gap: 10px;">
-    <img src="media/demo1.gif" width="200">
-    <img src="media/demo2.gif" width="200">
-    <img src="media/demo3.gif" width="200">
+<div style="display: flex; justify-content: center; gap: 20px;">
+    <img src="media/demo1.gif" width="230">
+    <img src="media/demo2.gif" width="230">
+    <img src="media/demo3.gif" width="230">
 </div>
 
 ## 🔮 Future Enhancements
