@@ -27,18 +27,21 @@ struct FriendsView: View {
                     List {
                         if !repository.friendRequests.isEmpty {
                             Section(header: Text("Friend Requests")) {
-                                ForEach(repository.friendRequests) { user in
+                                ForEach(repository.friendRequests.indices, id: \.self) { index in
+                                    let user = repository.friendRequests[index]
                                     FriendRequestRow(user: user, onRequestHandled: {
                                         refreshFriends()
                                     })
                                     .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                                    .listRowBackground(Color.clear)
                                 }
                             }
                         }
                         
                         if !repository.friends.isEmpty {
                             Section(header: Text("Friend List")) {
-                                ForEach(repository.friends) { friend in
+                                ForEach(repository.friends.indices, id: \.self) { index in
+                                    let friend = repository.friends[index]
                                     FriendRow(friend: friend)
                                         .contentShape(Rectangle())
                                         .onTapGesture {
@@ -53,6 +56,8 @@ struct FriendsView: View {
                     .refreshable {
                         refreshFriends()
                     }
+                    .listStyle(InsetGroupedListStyle())
+                    .background(Color(.systemGroupedBackground))
                 }
                 
                 Button(action: {
@@ -90,8 +95,11 @@ struct FriendsView: View {
     
     private func refreshFriends() {
         if let userId = authViewModel.user?.uid {
-            repository.fetchCurrentUser(userId: userId)
-            refreshTrigger.toggle()
+            repository.fetchCurrentUser(userId: userId) { _ in
+                DispatchQueue.main.async {
+                    refreshTrigger.toggle()
+                }
+            }
         }
     }
     
@@ -200,7 +208,7 @@ struct FriendRequestRow: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            HStack(alignment: .center) {
+            HStack(alignment: .center, spacing: 8) {
                 Image(systemName: "person.circle.fill")
                     .resizable()
                     .frame(width: 40, height: 40)
@@ -209,32 +217,29 @@ struct FriendRequestRow: View {
                 VStack(alignment: .leading) {
                     Text(displayName)
                         .font(.headline)
+                        .lineLimit(1)
                     
                     if let username = user.username {
                         Text("@\(username)")
                             .font(.subheadline)
                             .foregroundColor(.gray)
+                            .lineLimit(1)
                     }
                 }
+                .layoutPriority(0)
                 
-                Spacer()
+                Spacer(minLength: 4)
                 
                 if isAccepting || isRejecting {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle())
-                        .frame(width: 120)
+                        .frame(width: 100)
                 } else {
-                    ViewThatFits {
-                        HStack(spacing: 12) {
-                            acceptButton
-                            declineButton
-                        }
-                        
-                        VStack(spacing: 8) {
-                            acceptButton
-                            declineButton
-                        }
+                    HStack(spacing: 8) {
+                        acceptButton
+                        declineButton
                     }
+                    .layoutPriority(1)
                 }
             }
             
@@ -246,8 +251,11 @@ struct FriendRequestRow: View {
             }
         }
         .padding(.vertical, 8)
+        .padding(.horizontal, 4)
         .background(Color(.systemBackground))
         .cornerRadius(12)
+        .listRowBackground(Color.clear)
+        .listRowInsets(EdgeInsets())
     }
     
     private var acceptButton: some View {
@@ -256,19 +264,18 @@ struct FriendRequestRow: View {
         }) {
             HStack {
                 Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 18))
+                    .font(.system(size: 14))
                 Text("Accept")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 14, weight: .medium))
             }
             .padding(.vertical, 8)
-            .padding(.horizontal, 12)
-            .frame(minWidth: 100)
+            .padding(.horizontal, 8)
+            .frame(width: 90)
             .background(
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 8)
                     .fill(Color.green)
             )
             .foregroundColor(.white)
-            .shadow(color: Color.green.opacity(0.3), radius: 3, x: 0, y: 2)
         }
         .buttonStyle(ScaleButtonStyle())
         .contentShape(Rectangle())
@@ -280,19 +287,18 @@ struct FriendRequestRow: View {
         }) {
             HStack {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 18))
+                    .font(.system(size: 14))
                 Text("Decline")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 14, weight: .medium))
             }
             .padding(.vertical, 8)
-            .padding(.horizontal, 12)
-            .frame(minWidth: 100)
+            .padding(.horizontal, 8)
+            .frame(width: 90)
             .background(
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 8)
                     .fill(Color.red)
             )
             .foregroundColor(.white)
-            .shadow(color: Color.red.opacity(0.3), radius: 3, x: 0, y: 2)
         }
         .buttonStyle(ScaleButtonStyle())
         .contentShape(Rectangle())

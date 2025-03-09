@@ -165,7 +165,6 @@ struct ProfileInfoView: View {
                                 .foregroundColor(.blue)
                         }
                     }
-                    .padding(.horizontal)
                     
                     Text(bio)
                         .font(.body)
@@ -176,7 +175,6 @@ struct ProfileInfoView: View {
                             RoundedRectangle(cornerRadius: 10)
                                 .fill(Color(.systemGray6))
                         )
-                        .padding(.horizontal)
                 }
                 .padding(.top, 4)
             } else {
@@ -205,7 +203,6 @@ struct ProfileInfoView: View {
                         .fontWeight(.medium)
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal)
                 
                 HStack(spacing: 12) {
                     Image(systemName: "sparkles")
@@ -230,9 +227,7 @@ struct ProfileInfoView: View {
                     RoundedRectangle(cornerRadius: 10)
                         .fill(Color(.systemGray6))
                 )
-                .padding(.horizontal)
             }
-            .frame(maxWidth: 500)
             .padding(.top, 8)
             
             // Ratings & Reviews Placeholder Section
@@ -245,7 +240,6 @@ struct ProfileInfoView: View {
                         .fontWeight(.medium)
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal)
                 
                 HStack(spacing: 12) {
                     Image(systemName: "sparkles")
@@ -270,12 +264,11 @@ struct ProfileInfoView: View {
                     RoundedRectangle(cornerRadius: 10)
                         .fill(Color(.systemGray6))
                 )
-                .padding(.horizontal)
             }
-            .frame(maxWidth: 500)
             .padding(.top, 4)
         }
         .padding(.vertical)
+        //.padding(.horizontal)
     }
 }
 
@@ -302,7 +295,6 @@ struct EditProfileView: View {
                     .padding(.vertical, 10)
                     .frame(maxWidth: .infinity)
                     .background(Color.red.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
-                    .padding(.horizontal)
             }
             
             VStack(alignment: .leading, spacing: 6) {
@@ -320,7 +312,6 @@ struct EditProfileView: View {
                     .autocapitalization(.none)
                     .disableAutocorrection(true)
             }
-            .frame(maxWidth: 500)
             
             VStack(alignment: .leading, spacing: 6) {
                 Text("Display Name")
@@ -335,7 +326,6 @@ struct EditProfileView: View {
                             .fill(Color(.systemGray6))
                     )
             }
-            .frame(maxWidth: 500)
             
             VStack(alignment: .leading, spacing: 6) {
                 Text("Bio")
@@ -350,12 +340,11 @@ struct EditProfileView: View {
                         RoundedRectangle(cornerRadius: 10)
                             .fill(Color(.systemGray6))
                     )
-                    .overlay(
+                    /*.overlay(
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(Color(.systemGray4), lineWidth: 0.5)
-                    )
+                    )*/
             }
-            .frame(maxWidth: 500)
             
             HStack(spacing: 12) {
                 Button(action: {
@@ -403,8 +392,8 @@ struct EditProfileView: View {
                 .contentShape(Rectangle())
                 .buttonStyle(ScaleButtonStyle())
             }
-            .frame(maxWidth: 500)
         }
+        //.padding(.horizontal)
         .frame(maxWidth: .infinity, alignment: .center)
     }
     

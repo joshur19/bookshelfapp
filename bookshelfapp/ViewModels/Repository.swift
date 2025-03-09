@@ -273,18 +273,21 @@ class Repository: ObservableObject {
         }
     }
     
-    func fetchCurrentUser(userId: String) {
+    func fetchCurrentUser(userId: String, completion: ((Error?) -> Void)? = nil) {
         userListenerRegistration = db.collection("users").document(userId)
             .addSnapshotListener { [weak self] documentSnapshot, error in
                 guard let self = self else { return }
                 
                 if let error = error {
                     self.error = "Failed to fetch user data: \(error.localizedDescription)"
+                    completion?(error)
                     return
                 }
                 
                 guard let document = documentSnapshot else {
+                    let noDocError = NSError(domain: "Repository", code: 1, userInfo: [NSLocalizedDescriptionKey: "User document not found"])
                     self.error = "User document not found"
+                    completion?(noDocError)
                     return
                 }
                 
@@ -294,57 +297,101 @@ class Repository: ObservableObject {
                 case .success(let user):
                     self.currentUser = user
                     
+                    // Create a dispatch group to wait for both operations
+                    let group = DispatchGroup()
+                    var friendsError: Error?
+                    var requestsError: Error?
+                    
                     // Fetch friends
+                    group.enter()
                     if let friends = user.friends, !friends.isEmpty {
-                        self.fetchFriends(friendIds: friends)
+                        self.fetchFriends(friendIds: friends) { error in
+                            friendsError = error
+                            group.leave()
+                        }
                     } else {
                         self.friends = []
+                        group.leave()
                     }
                     
                     // Fetch friend requests
-                    self.fetchFriendRequests(forUserId: userId)
+                    group.enter()
+                    self.fetchFriendRequests(forUserId: userId) { error in
+                        requestsError = error
+                        group.leave()
+                    }
+                    
+                    // When both operations complete, call the completion handler
+                    group.notify(queue: .main) {
+                        completion?(friendsError ?? requestsError)
+                    }
                     
                 case .failure(let error):
-                    print("Error decoding user: \(error)")
-                    self.error = "Failed to decode user data"
+                    self.error = "Failed to decode user data: \(error.localizedDescription)"
+                    completion?(error)
                 }
             }
     }
     
-    private func fetchFriendRequests(forUserId: String) {
-
-        // If we have friend requests in the current user object, fetch those users
-        if let currentUser = self.currentUser, let friendRequestIds = currentUser.friendRequests, !friendRequestIds.isEmpty {
-            db.collection("users")
+    private func fetchFriendRequests(forUserId: String, completion: @escaping (Error?) -> Void) {
+        // Get the current user document to access the friendRequests array
+        db.collection("users").document(forUserId).getDocument { [weak self] (document, error) in
+            guard let self = self else { return }
+            
+            if let error = error {
+                print("Error fetching user document for friend requests: \(error)")
+                self.error = "Failed to fetch friend requests: \(error.localizedDescription)"
+                completion(error)
+                return
+            }
+            
+            guard let document = document, document.exists, let userData = document.data() else {
+                self.friendRequests = []
+                completion(nil)
+                return
+            }
+            
+            // Get the friend request IDs from the user document
+            guard let friendRequestIds = userData["friendRequests"] as? [String], !friendRequestIds.isEmpty else {
+                self.friendRequests = []
+                completion(nil)
+                return
+            }
+            
+            // Fetch the user data for each friend request
+            self.db.collection("users")
                 .whereField(FieldPath.documentID(), in: friendRequestIds)
-                .getDocuments { [weak self] (snapshot, error) in
+                .getDocuments { [weak self] snapshot, error in
                     guard let self = self else { return }
                     
                     if let error = error {
                         print("Error fetching friend request users: \(error)")
                         self.error = "Failed to fetch friend request users: \(error.localizedDescription)"
+                        completion(error)
                         return
                     }
                     
                     guard let documents = snapshot?.documents else {
                         self.friendRequests = []
+                        completion(nil)
                         return
                     }
                     
-                    self.friendRequests = documents.compactMap { queryDocumentSnapshot -> AppUser? in
-                        let result = Result { try queryDocumentSnapshot.data(as: AppUser.self) }
+                    let users = documents.compactMap { document -> AppUser? in
+                        let result = Result { try document.data(as: AppUser.self) }
                         
                         switch result {
                         case .success(let user):
                             return user
                         case .failure(let error):
-                            print("Error decoding friend request user: \(error)")
+                            print("Error decoding user: \(error)")
                             return nil
                         }
                     }
+                    
+                    self.friendRequests = users
+                    completion(nil)
                 }
-        } else {
-            self.friendRequests = []
         }
     }
     
@@ -639,47 +686,10 @@ class Repository: ObservableObject {
                 } else {
                     print("Successfully accepted friend request from \(friendId)")
                     
-                    // Update local data immediately to reflect changes
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        // Update friends list
-                        if let currentUser = self.currentUser {
-                            var updatedFriends = currentUser.friends ?? []
-                            if !updatedFriends.contains(friendId) {
-                                updatedFriends.append(friendId)
-                            }
-                            
-                            // Update friend requests list
-                            var updatedRequests = currentUser.friendRequests ?? []
-                            if let index = updatedRequests.firstIndex(of: friendId) {
-                                updatedRequests.remove(at: index)
-                            }
-                            
-                            // Update the current user object
-                            var updatedUser = currentUser
-                            updatedUser.friends = updatedFriends
-                            updatedUser.friendRequests = updatedRequests
-                            self.currentUser = updatedUser
-                            
-                            // Fetch the new friend's data if not already in friends list
-                            if !self.friends.contains(where: { $0.id == friendId }) {
-                                self.db.collection("users").document(friendId).getDocument { (document, error) in
-                                    if let document = document, document.exists, 
-                                       let friendData = try? document.data(as: AppUser.self) {
-                                        self.friends.append(friendData)
-                                    }
-                                }
-                            }
-                            
-                            // Update friend requests UI
-                            self.friendRequests.removeAll { $0.id == friendId }
-                        }
-                    }
-                    
                     // Refresh data from server
-                    self.fetchCurrentUser(userId: currentUserId)
-                    completion(nil)
+                    self.fetchCurrentUser(userId: currentUserId) { _ in
+                        completion(nil)
+                    }
                 }
             }
         }
@@ -699,21 +709,10 @@ class Repository: ObservableObject {
                 print("Error rejecting friend request: \(error)")
                 completion(error)
             } else {
-                // Update local data immediately
-                DispatchQueue.main.async {
-                    self.friendRequests.removeAll { $0.id == friendId }
-                    
-                    // Also update the current user object
-                    if var currentUser = self.currentUser, var requests = currentUser.friendRequests {
-                        if let index = requests.firstIndex(of: friendId) {
-                            requests.remove(at: index)
-                            currentUser.friendRequests = requests
-                            self.currentUser = currentUser
-                        }
-                    }
+                // Refresh data from server
+                self.fetchCurrentUser(userId: currentUserId) { _ in
+                    completion(nil)
                 }
-                
-                completion(nil)
             }
         }
     }
@@ -777,7 +776,7 @@ class Repository: ObservableObject {
         }
     }
     
-    private func fetchFriends(friendIds: [String]) {
+    private func fetchFriends(friendIds: [String], completion: @escaping (Error?) -> Void) {
         db.collection("users")
             .whereField(FieldPath.documentID(), in: friendIds)
             .getDocuments { [weak self] (snapshot, error) in
@@ -786,11 +785,13 @@ class Repository: ObservableObject {
                 if let error = error {
                     print("Error fetching friends: \(error)")
                     self.error = "Failed to fetch friends: \(error.localizedDescription)"
+                    completion(error)
                     return
                 }
                 
                 guard let documents = snapshot?.documents else {
                     self.friends = []
+                    completion(nil)
                     return
                 }
                 
@@ -805,6 +806,8 @@ class Repository: ObservableObject {
                         return nil
                     }
                 }
+                
+                completion(nil)
             }
     }
     

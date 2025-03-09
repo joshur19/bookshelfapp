@@ -38,6 +38,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		037F343F2D7DA6E4003CE84A /* media */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = media;
+			sourceTree = "<group>";
+		};
 		03B403902D69EAD200F0AD08 /* bookshelfapp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = bookshelfapp;
@@ -86,6 +91,7 @@
 		03B403852D69EAD200F0AD08 = {
 			isa = PBXGroup;
 			children = (
+				037F343F2D7DA6E4003CE84A /* media */,
 				03B403902D69EAD200F0AD08 /* bookshelfapp */,
 				03B403A12D69EAD400F0AD08 /* bookshelfappTests */,
 				03B403AB2D69EAD400F0AD08 /* bookshelfappUITests */,
@@ -120,6 +126,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				037F343F2D7DA6E4003CE84A /* media */,
 				03B403902D69EAD200F0AD08 /* bookshelfapp */,
 			);
 			name = bookshelfapp;

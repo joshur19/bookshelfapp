@@ -36,12 +36,12 @@ struct FriendProfileView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color(.systemBackground)
+                Color(.systemGroupedBackground)
                     .edgesIgnoringSafeArea(.all)
                 
                 ScrollView {
-                    VStack(spacing: 20) {
-                        // Profile Header
+                    VStack(spacing: 10) {
+                        // Profile Header Section
                         VStack(spacing: 12) {
                             ZStack {
                                 Circle()
@@ -56,7 +56,7 @@ struct FriendProfileView: View {
                             }
                             .shadow(color: Color.blue.opacity(0.1), radius: 5, x: 0, y: 3)
                             
-                            VStack(spacing: 6) {
+                            VStack(spacing: 4) {
                                 Text(displayName)
                                     .font(.title3)
                                     .fontWeight(.medium)
@@ -67,63 +67,78 @@ struct FriendProfileView: View {
                                         .foregroundColor(.secondary)
                                 }
                             }
-                            
-                            if let bio = friend.bio, !bio.isEmpty {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text("About")
-                                        .font(.subheadline)
-                                        .fontWeight(.medium)
-                                        .foregroundColor(.secondary)
-                                    
-                                    Text(bio)
-                                        .font(.body)
-                                        .lineSpacing(3)
-                                        .padding(12)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .fill(Color(.systemGray6))
-                                        )
-                                }
-                                .padding(.horizontal)
-                                .frame(maxWidth: 500)
-                            }
                         }
-                        .padding(.top)
+                        .padding(.vertical, 16)
+                        .frame(maxWidth: .infinity)
                         
+                        // Bio Section (if available)
+                        if let bio = friend.bio, !bio.isEmpty {
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Image(systemName: "text.quote")
+                                        .foregroundColor(.blue)
+                                    Text("About")
+                                        .font(.headline)
+                                        .fontWeight(.medium)
+                                }
+                                .padding(.horizontal, 12)
+                                
+                                Text(bio)
+                                    .font(.body)
+                                    .lineSpacing(3)
+                                    .padding(12)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color(.systemBackground))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
+                                    )
+                            )
+                            .shadow(color: Color.primary.opacity(0.1), radius: 3, x: 0, y: 2)
+                        }
+                        
+                        // Error Message (if any)
                         if let error = errorMessage {
                             Text(error)
                                 .foregroundColor(.red)
-                                .padding(.vertical, 10)
+                                .padding(.vertical, 8)
                                 .frame(maxWidth: .infinity)
                                 .background(Color.red.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
-                                .padding(.horizontal)
+                                .padding(.horizontal, 4)
                                 .transition(.scale.combined(with: .opacity))
                         }
                         
                         // Books Section
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("\(displayName)'s Books")
-                                .font(.headline)
-                                .fontWeight(.medium)
-                                .padding(.horizontal)
+                            HStack {
+                                Image(systemName: "books.vertical")
+                                    .foregroundColor(.blue)
+                                Text("\(displayName)'s Books")
+                                    .font(.headline)
+                                    .fontWeight(.medium)
+                            }
+                            .padding(.horizontal, 12)
                             
                             if isLoading {
                                 VStack {
                                     ProgressView()
                                         .progressViewStyle(CircularProgressViewStyle())
-                                        .padding(.bottom, 6)
+                                        .padding(.bottom, 4)
                                     
                                     Text("Loading books...")
                                         .foregroundColor(.secondary)
                                         .font(.subheadline)
                                 }
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 24)
+                                .padding(.vertical, 20)
                             } else if books.isEmpty {
-                                VStack(spacing: 10) {
+                                VStack(spacing: 8) {
                                     Image(systemName: "books.vertical")
-                                        .font(.system(size: 32))
+                                        .font(.system(size: 28))
                                         .foregroundColor(.gray.opacity(0.7))
                                     
                                     Text("No books in collection yet")
@@ -131,19 +146,29 @@ struct FriendProfileView: View {
                                         .foregroundColor(.gray)
                                 }
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 24)
+                                .padding(.vertical, 20)
                             } else {
-                                LazyVGrid(columns: columns, spacing: 16) {
+                                LazyVGrid(columns: columns, spacing: 12) {
                                     ForEach(books) { book in
                                         FriendBookView(book: book)
                                             .contentShape(Rectangle())
                                     }
                                 }
-                                .padding(.horizontal)
+                                .padding(.horizontal, 12)
                             }
                         }
-                        .padding(.top, 4)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color(.systemBackground))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
+                                )
+                        )
+                        .shadow(color: Color.primary.opacity(0.1), radius: 3, x: 0, y: 2)
                         
+                        // Remove Friend Button
                         Button(action: {
                             showRemoveAlert = true
                         }) {
@@ -153,7 +178,7 @@ struct FriendProfileView: View {
                                 
                                 if isRemovingFriend {
                                     ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .red))
                                 } else {
                                     Text("Remove Friend")
                                         .font(.body)
@@ -161,22 +186,22 @@ struct FriendProfileView: View {
                                 }
                             }
                             .padding(.vertical, 10)
-                            .padding(.horizontal, 16)
-                            .frame(maxWidth: 500)
+                            .frame(maxWidth: .infinity)
                             .background(
                                 RoundedRectangle(cornerRadius: 10)
                                     .stroke(Color.red.opacity(0.7), lineWidth: 1.5)
-                                    //.background(Color.red.opacity(0.08))
+                                    .background(Color.red.opacity(0.05))
                             )
                             .foregroundColor(Color.red.opacity(0.8))
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                         }
-                        .padding(.horizontal)
+                        .padding(.vertical, 6)
                         .disabled(isRemovingFriend)
                         .contentShape(Rectangle())
+
                     }
-                    .padding(.bottom, 20)
-                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 12)
                 }
             }
             .navigationTitle("Friend Profile")
